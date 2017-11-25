@@ -11,3 +11,10 @@ If Warband installation is found and the patch is not detected it will ask the u
 If Warband installation is found and the patch is detected, it will compare the version to the latest one available and if neccessary, it will ask the user if he / she wants to update to the latest version.
 
 Before installing or updating the patch, if the Native module is found, a backup is created automatically inside the Modules folder with the following format: Native_Backup_YYYY-MM-DD.zip
+
+
+Hashes:
+
+MD5:     4DEAEC3E0AC8DEB54E35F5972A6F2E8F
+SHA-1:   C8C95C6FC8A873EEB419BC1C4D42997D60841F27
+SHA-256: 77FBB3F1FB63A1920DF204F1A92A0CDA26818FDC45F03FD06D6D08A2489531BE
