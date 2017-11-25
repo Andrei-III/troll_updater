@@ -167,7 +167,7 @@ print "                              by LizardWizard   "
 print "\n\n"
 
 
-patch_url = "https://www.dropbox.com/s/5hdyljaz2zfui23/TG-NeoGKLatest.zip?dl=1"
+patch_url = "https://www.dropbox.com/s/accz9cxgxpkswhv/TG-NeoGK.zip?dl=1"
 warband_path = get_warband_path()
 modules_path = warband_path + r"\Modules"
 native_path = warband_path + r"\Modules\Native"
