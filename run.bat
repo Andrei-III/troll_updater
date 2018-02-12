@@ -1,4 +1,4 @@
 @echo off
-troll_updater.py
+python troll_updater.py
 pause
 exit
