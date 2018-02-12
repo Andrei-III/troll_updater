@@ -1,6 +1,6 @@
 # TrollPatch Updater
-Simple patching &amp; updating utility for Mount &amp; Blade Warband.
-Written in Python 2.7 and compiled to executable with py2exe.
+Simple patching &amp; updating utility for Mount &amp; Blade Warband NeoGK mod with TrollGame flavour.
+Written in Python 2.7 and compiled to executable with pyinstaller.
 
 The tool will talk to the troll-game.org server to find out the latest version of neogk patch available for download (if it cannot connect to the server for various reasons, it will notify the user and ask him to try again later).
 
