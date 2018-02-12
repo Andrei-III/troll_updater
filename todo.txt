@@ -1,0 +1,10 @@
+[done] Feature to install trollpatch
+[done] Feature to create module backup
+
+[todo] Change module backup name format to accomodate also the time of backup
+[todo] Feature to restore module backups
+[todo] Feature to install banner pack
+[todo] Feature to install ni sounds
+[todo] Feature to install monthy python music
+[todo] Feature to install coughs sounds
+

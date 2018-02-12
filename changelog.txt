@@ -1,0 +1,42 @@
+
+# Changelog
+All notable changes to this project will be documented in this file.
+
+### [1.0.2] - 2018-02-12
+## Added
+- Files:
+    fileutils.py
+    build.bat
+    troll_updater.ico
+    changelog.txt
+    readme.txt
+    todo.txt
+- Executable icon
+- Stability improvements
+- Code comments
+
+## Changed
+- Some variable names
+- Split logic in two files (troll_updater.py, fileutils.py)
+- Smaller executable size thanks to pyinstaller
+- File run.bat
+- Readme.md
+
+## Removed
+- Files:
+    setup.bat
+    setup.py
+
+
+### [1.0.1] - 2018-02-08
+## Changed
+- Trollpatch download link
+
+
+### [1.0.0] - 2017-10-25
+## Added
+- Download file feature
+- Backup directory feature
+- Unzip archive feature
+- Remove file / directory feature
+- Executable
