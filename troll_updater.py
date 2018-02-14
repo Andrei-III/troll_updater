@@ -1,14 +1,67 @@
+import os
+import shutil
 import sys
 import httplib
-import shutil
 import struct
 import time
 import urllib2
 import zipfile
 from _winreg import *
-from os import getcwd, system
 
-import fileutils
+
+def path_exists(path):
+    if path is None:
+        return False
+    if not os.path.exists(path):
+        return False
+    return True
+
+
+def dir_exists(dir_path):
+    return path_exists(dir_path) and os.path.isdir(dir_path)
+
+
+def file_exists(file_path):
+    return path_exists(file_path) and os.path.isfile(file_path)
+
+
+def get_filename(path):
+    if not file_exists(path):
+        return None
+    return os.path.basename(path).split(".")[0]
+
+
+def get_dirname(path):
+    if not dir_exists(path):
+        return None
+    return os.path.basename(path)
+
+
+# Removes a file and ignores errors
+def remove_file_silent(file_path):
+    try:
+        os.remove(file_path)
+    except OSError:
+        pass
+
+
+# Removes a directory and ignores errors
+def remove_dir_silent(dir_path):
+    if dir_exists(dir_path):
+        shutil.rmtree(dir_path, ignore_errors=True)
+
+
+def overwrite_dir(root_dst_dir, root_src_dir):
+    for src_dir, dirs, files in os.walk(root_src_dir):
+        dst_dir = src_dir.replace(root_src_dir, root_dst_dir, 1)
+        if not os.path.exists(dst_dir):
+            os.makedirs(dst_dir)
+        for file_ in files:
+            src_file = os.path.join(src_dir, file_)
+            dst_file = os.path.join(dst_dir, file_)
+            if os.path.exists(dst_file):
+                os.remove(dst_file)
+            shutil.move(src_file, dst_dir)
 
 
 # Returns warband installation path if found and None otherwise
@@ -24,8 +77,8 @@ def get_warband_path():
 
 # Returns True if the patch was found in the warband installation path and False otherwise
 def patch_found(path):
-    if fileutils.dir_exists(path):
-        if fileutils.file_exists(path + r'\version'):
+    if dir_exists(path):
+        if file_exists(path + r'\version'):
             return True
         else:
             return False
@@ -68,17 +121,14 @@ def check_latest_version(url):
         raw_input("\n  Press Enter to exit...")
         sys.exit(1)
 
-    if version is not None:
-        return version.read()
-    else:
-        return None
+    return version.read() if version is not None else None
 
 
 # Creates a binary file that stores a packed integer which represents patch version
 def create_version_file(path, version_int):
     if path is None or version_int is None:
         return False
-    if not fileutils.dir_exists(path):
+    if not dir_exists(path):
         return False
     if not isinstance(version_int, int):
         return False
@@ -111,7 +161,7 @@ def check_installed_version(path):
 
     version_path = path + r'\version'
 
-    if not fileutils.file_exists(version_path):
+    if not file_exists(version_path):
         return None
 
     with open(version_path, 'rb') as file_handle:
@@ -124,7 +174,11 @@ def check_installed_version(path):
 def download_file(download_url):
     print "\n  Requesting file download, please wait...",
     print "(this might take a while)\n"
-    patch = urllib2.urlopen(download_url)
+    try:
+        patch = urllib2.urlopen(download_url)
+    except urllib2.HTTPError as e:
+        print "  Failed to download file.\nReason: {0}".format(e)
+        sys.exit(1)
     meta = patch.info()
     file_name = str(meta.getheaders("content-disposition")[0].split(';')[1].split("\"")[1])
     file_size = long(meta.getheaders("Content-Length")[0])
@@ -148,20 +202,17 @@ def download_file(download_url):
             print progress,
 
     filewriter.close()
-    print " Download complete:",
+    print "  Download complete:",
     print progress
-    return getcwd() + "\\" + file_name
+    return os.getcwd() + "\\" + file_name
 
 
 # Returns path to extracted file
 def extract_zip(zip_path):
-    print "\n  Extracting archive",
-    print ".",
+    print "\n  Extracting archive ...",
     zip_ref = zipfile.ZipFile(zip_path, 'r')
-    print ".",
     output_dir = zip_path.split(".")[0]
     zip_ref.extractall(output_dir)
-    print ".",
     print "\tdone"
     zip_ref.close()
     return output_dir
@@ -169,54 +220,51 @@ def extract_zip(zip_path):
 
 # Archives a directory into a zip file
 def backup_zip(dst_path, src_path):
-    if fileutils.dir_exists(dst_path) and fileutils.dir_exists(src_path):
-        print "\n  Creating backup",
-        date = time.strftime("%Y-%m-%d")
-        print ".",
-        backup_name = fileutils.get_dirname(src_path) + "_Backup_" + date
-        print ".",
+    if dir_exists(dst_path) and dir_exists(src_path):
+        print "\n  Creating backup ...",
+        date = time.strftime("%Y-%m-%d_%H-%M-%S")
+        backup_name = get_dirname(src_path) + "_Backup_" + date
         shutil.make_archive(dst_path + "\\" + backup_name, 'zip', src_path)
-        print ".",
         print "\tdone"
 
 
 # Removes a list of files and directories
 # Returns True if successful and False otherwise
 def clean_up(path_list):
-    print "\n  Cleaning up",
+    print "\n  Cleaning up ...",
 
     if path_list is None:
-        print ".",
-        print ".",
-        print ".",
         print "\t\tfailed"
         return False
 
     for path in path_list:
-        if fileutils.dir_exists(path):
-            fileutils.remove_dir_silent(path)
+        if dir_exists(path):
+            remove_dir_silent(path)
             continue
-        if fileutils.file_exists(path):
-            fileutils.remove_file_silent(path)
-            print ".",
-            print ".",
+        if file_exists(path):
+            remove_file_silent(path)
     print "\t\tdone"
     return True
 
 
 def install_patch(dst_path, src_path):
-    print "\n  Installing patch",
-    if fileutils.dir_exists(src_path):
-        print ".",
-        fileutils.remove_dir_silent(dst_path)
-        print ".",
+    print "\n  Installing {0}...".format(get_dirname(src_path)),
+    if dir_exists(src_path):
+        remove_dir_silent(dst_path)
         shutil.copytree(src_path, dst_path)
-        print ".",
         print "\tdone"
     else:
-        print ".",
-        print ".",
-        print ".",
+        print "\tfailed"
+        raw_input("\n  Press Enter to exit...")
+        sys.exit(1)
+
+
+def install_addon(dst_path, src_path):
+    print "\n  Installing {0} ...".format(get_dirname(src_path)),
+    if dir_exists(src_path):
+        overwrite_dir(dst_path, src_path)
+        print "\tdone"
+    else:
         print "\tfailed"
         raw_input("\n  Press Enter to exit...")
         sys.exit(1)
@@ -239,13 +287,171 @@ def print_logo():
     print "\n\n"
 
 
-print_logo()
+def print_main_menu():
+    installed_version = check_installed_version(NATIVE_PATH)
+    print "  Warband found:     \t{0}\n".format(WARBAND_PATH)
+    print "  Latest patch version:    \t{0}\n".format(LATEST_VERSION)
+    print "  Installed patch version: \t{0}\n".format(
+        installed_version if installed_version is not None else "not found")
+
+    if installed_version is not None:
+        print "  1. Update patch"
+    else:
+        print "  1. Install patch"
+    print "  2. Install addons"
+    print "  3. Exit"
+
+
+def main_menu_handler(installed_patch_version):
+    while True:
+        choice = ask_input(['1', '2', '3'])
+        if choice == '1':
+            os.system("cls")
+            print_logo()
+            if installed_patch_version is None:  # Patch installation
+                try:
+                    archive_path = download_file(PATCH_URL)
+                    archive_deflated_path = extract_zip(archive_path)
+                    backup_zip(MODULES_PATH, NATIVE_PATH)
+                    install_patch(NATIVE_PATH, archive_deflated_path + r"\TG-NeoGK\Native")
+                    create_version_file(NATIVE_PATH, version_to_int(LATEST_VERSION))
+                    clean_up([archive_deflated_path, archive_path])
+                except Exception as e:
+                    print e
+                    sys.exit(1)
+                print "\n  TrollPatch installed successfully. Version: %s" % check_installed_version(NATIVE_PATH)
+                raw_input("\n  Press Enter to return...")
+                os.system('cls')
+                print_logo()
+                print_main_menu()
+                main_menu_handler(check_installed_version(NATIVE_PATH))
+                break
+            elif installed_patch_version < LATEST_VERSION:  # Patch update
+                archive_path = download_file(PATCH_URL)
+                archive_deflated_path = extract_zip(archive_path)
+                backup_zip(MODULES_PATH, NATIVE_PATH)
+                install_patch(NATIVE_PATH, archive_deflated_path + r"\TG-NeoGK\Native")
+                create_version_file(NATIVE_PATH, version_to_int(LATEST_VERSION))
+                clean_up([archive_deflated_path, archive_path])
+                print "\n  TrollPatch updated successfully. Version: %s" % check_installed_version(NATIVE_PATH)
+                raw_input("\n  Press Enter to return...")
+                os.system('cls')
+                print_logo()
+                print_main_menu()
+                main_menu_handler(check_installed_version(NATIVE_PATH))
+                break
+            else:  # Patch is up-to-date already
+                print "\n  Already up to date!\n"
+                raw_input("\n  Press Enter to return...")
+                os.system('cls')
+                print_logo()
+                print_main_menu()
+                main_menu_handler(check_installed_version(NATIVE_PATH))
+                break
+        if choice == '2':
+            os.system('cls')
+            print_logo()
+            print_addons_menu()
+            addons_menu_handler()
+            break
+        if choice == '3':
+            sys.exit(0)
+
+
+def print_addons_menu():
+    print " ", 21 * "-", "ADDONS", 21 * "-", "\n"
+    print "  1. TrollGame Banner Pack"
+    print "  2. Coughs addon"
+    print "  3. Monty Python Theme addon"
+    print "  4. Ni! addon"
+    print "  5. Return to main menu"
+    print "  6. Exit"
+    print " ", 50 * "-"
+
+
+def addons_menu_handler():
+    while True:
+        choice = ask_input(['1', '2', '3', '4', '5', '6'])
+        if choice == '1':  # Install banner pack
+            os.system("cls")
+            print_logo()
+            banners_zip = download_file(ADDON_BANNERS_URL)
+            banners_unzip = extract_zip(banners_zip)
+            install_addon(TEXTURES_PATH, banners_unzip + r'\Textures')
+            clean_up([banners_zip, banners_unzip])
+            print "\n  TrollGame Banner Pack installed successfully."
+            raw_input("\n  Press Enter to return...")
+            os.system('cls')
+            print_logo()
+            print_addons_menu()
+            addons_menu_handler()
+            break
+        if choice == '2':  # Install coughs addon
+            os.system("cls")
+            print_logo()
+            coughs_zip = download_file(ADDON_COUGHS_URL)
+            coughs_unzip = extract_zip(coughs_zip)
+            install_addon(SOUNDS_PATH, coughs_unzip + r'\Sounds')
+            clean_up([coughs_zip, coughs_unzip])
+            print "\n  Coughs addon installed successfully."
+            raw_input("\n  Press Enter to return...")
+            os.system('cls')
+            print_logo()
+            print_addons_menu()
+            addons_menu_handler()
+            break
+        if choice == '3':  # Install monty python addon
+            os.system("cls")
+            print_logo()
+            monty_zip = download_file(ADDON_MPTHEME_URL)
+            monty_unzip = extract_zip(monty_zip)
+            install_addon(SOUNDS_PATH, monty_unzip + r'\Sounds')
+            clean_up([monty_zip, monty_unzip])
+            print "\n  Monty Python Theme addon installed successfully."
+            raw_input("\n  Press Enter to return...")
+            os.system('cls')
+            print_logo()
+            print_addons_menu()
+            addons_menu_handler()
+            break
+        if choice == '4':  # Install ni! addon
+            os.system("cls")
+            print_logo()
+            ni_zip = download_file(ADDON_MPTHEME_URL)
+            ni_unzip = extract_zip(ni_zip)
+            install_addon(SOUNDS_PATH, ni_unzip + r'\Sounds')
+            clean_up([ni_zip, ni_unzip])
+            print "\n  Ni! addon installed successfully."
+            raw_input("\n  Press Enter to return...")
+            os.system('cls')
+            print_logo()
+            print_addons_menu()
+            addons_menu_handler()
+            break
+        if choice == '5':  # Return to main menu
+            os.system('cls')
+            print_logo()
+            print_main_menu()
+            main_menu_handler(check_installed_version(NATIVE_PATH))
+            break
+        if choice == '6':  # Exit
+            sys.exit(0)
+
+
+def ask_input(valid_inputs):
+    print ""
+    while True:
+        choice = raw_input("  > ")
+        for arg in valid_inputs:
+            if choice == arg:
+                return choice
+
 
 PATCH_URL = "https://www.dropbox.com/s/accz9cxgxpkswhv/TG-NeoGK.zip?dl=1"
-ADDON_COUGHS_URL = "https://community.troll-game.org/files/getdownload/604-coughs-addon/"
-ADDON_MPTHEME_URL = "https://community.troll-game.org/files/getdownload/612-monty-phytons-theme-addon/"
-ADDON_NI_URL = "https://community.troll-game.org/files/getdownload/602-trollgame-ni-addon/"
-ADDON_BANNERS_URL = "https://community.troll-game.org/files/getdownload/826-trollgames-banners-addon/"
+ADDON_COUGHS_URL = "https://www.dropbox.com/s/3c3coi7xs9h7nid/Coughs.zip?dl=1"
+ADDON_MPTHEME_URL = "https://www.dropbox.com/s/hwpa9ua7pe0t6kz/Monty.zip?dl=1"
+ADDON_NI_URL = "https://www.dropbox.com/s/bw9tsomflz3a9hf/Ni.zip?dl=1"
+ADDON_BANNERS_URL = "https://www.dropbox.com/s/19sbpbnrscu33ze/Banners.zip?dl=1"
 VERSION_URL = "http://troll-game.org/api/neogk/version"
 WARBAND_PATH = get_warband_path()
 MODULES_PATH = WARBAND_PATH + r"\Modules"
@@ -259,65 +465,9 @@ if WARBAND_PATH is None:
     raw_input("\n  Press Enter to exit...")
     sys.exit(1)
 
-print "  Connecting to server..."
+print "\n  Connecting to server..."
 LATEST_VERSION = check_latest_version(VERSION_URL)
-system('cls')
+os.system('cls')
 print_logo()
-
-# Warband installation found
-print "  Warband found:     \t{0}\n".format(WARBAND_PATH)
-print "  Latest version:    \t{0}\n".format(LATEST_VERSION)
-
-# Patch not found
-if patch_found(NATIVE_PATH) is False:
-    print "  Installed version: \tnot found\n"
-    print "\n  Would you like to install? (y/n)"
-    while True:
-        choice = raw_input("  > ")
-        if choice.lower() == 'y':
-            archive_path = download_file(PATCH_URL)
-            archive_deflated_path = extract_zip(archive_path)
-            backup_zip(MODULES_PATH, NATIVE_PATH)
-            install_patch(NATIVE_PATH, archive_deflated_path + r"\TG-NeoGK\Native")
-            create_version_file(NATIVE_PATH, version_to_int(LATEST_VERSION))
-            clean_up([archive_deflated_path, archive_path])
-            print "\n  TrollPatch installed successfully. Version: %s" % check_installed_version(NATIVE_PATH)
-            break
-        elif choice.lower() == 'n':
-            print "  Bye."
-            sys.exit(0)
-
-    raw_input("\n  Press Enter to exit...")
-    print "  Bye."
-    sys.exit(0)
-
-# Patch found
-installed_version = check_installed_version(NATIVE_PATH)
-print "  Installed version: \t%s\n" % installed_version
-
-# Newer patch available
-if installed_version < LATEST_VERSION:
-    print "\n  Would you like to update? (y/n)"
-    while True:
-        choice = raw_input(" > ")
-        if choice.lower() == 'y':
-            archive_path = download_file(PATCH_URL)
-            archive_deflated_path = extract_zip(archive_path)
-            backup_zip(MODULES_PATH, NATIVE_PATH)
-            install_patch(NATIVE_PATH, archive_deflated_path + r"\TG-NeoGK\Native")
-            create_version_file(NATIVE_PATH, version_to_int(LATEST_VERSION))
-            clean_up([archive_deflated_path, archive_path])
-            print "\n  TrollPatch installed successfully. Version: %s" % check_installed_version(NATIVE_PATH)
-            break
-        elif choice.lower() == 'n':
-            print "  Bye."
-            sys.exit(0)
-    raw_input("Press Enter to exit...")
-    print "  Bye."
-    sys.exit(0)
-
-# Patch is up-to-date already
-print "\n  Already up to date!\n"
-raw_input("\n  Press Enter to exit...")
-print "  Bye."
-sys.exit(0)
+print_main_menu()
+main_menu_handler(check_installed_version(NATIVE_PATH))
