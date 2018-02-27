@@ -6,6 +6,7 @@ import struct
 import time
 import urllib2
 import zipfile
+from colorama import init, Fore, Back, Style
 from _winreg import *
 
 
@@ -103,21 +104,29 @@ def check_latest_version(url):
     try:
         version = urllib2.urlopen(request)
     except ValueError:
+        error_color()
         print "\n  Invalid download URL: {0}".format(url)
+        reset_colors()
         raw_input("\n  Press Enter to exit...")
         sys.exit(1)
     except urllib2.HTTPError as e:
+        error_color()
         print "\n  Server failed to fulfill the request."
         print "Error code: {0}".format(e.code)
+        reset_colors()
         raw_input("\n  Press Enter to exit...")
         sys.exit(1)
     except httplib.BadStatusLine:
+        error_color()
         print "\n Invalid server response code " + version
+        reset_colors()
         raw_input("\n  Press Enter to exit...")
         sys.exit(1)
     except urllib2.URLError as e:
+        error_color()
         print "\n  Cannot reach server. Try again later."
         print "  Reason: {0}".format(e.reason)
+        reset_colors()
         raw_input("\n  Press Enter to exit...")
         sys.exit(1)
 
@@ -225,7 +234,7 @@ def backup_zip(dst_path, src_path):
         date = time.strftime("%Y-%m-%d_%H-%M-%S")
         backup_name = get_dirname(src_path) + "_Backup_" + date
         shutil.make_archive(dst_path + "\\" + backup_name, 'zip', src_path)
-        print "\tdone"
+        print "\t\tdone"
 
 
 # Removes a list of files and directories
@@ -234,7 +243,9 @@ def clean_up(path_list):
     print "\n  Cleaning up ...",
 
     if path_list is None:
+        error_color()
         print "\t\tfailed"
+        reset_colors()
         return False
 
     for path in path_list:
@@ -252,9 +263,11 @@ def install_patch(dst_path, src_path):
     if dir_exists(src_path):
         remove_dir_silent(dst_path)
         shutil.copytree(src_path, dst_path)
-        print "\tdone"
+        print "\t\tdone"
     else:
+        error_color()
         print "\tfailed"
+        reset_colors()
         raw_input("\n  Press Enter to exit...")
         sys.exit(1)
 
@@ -265,25 +278,40 @@ def install_addon(dst_path, src_path):
         overwrite_dir(dst_path, src_path)
         print "\tdone"
     else:
+        error_color()
         print "\tfailed"
+        reset_colors()
         raw_input("\n  Press Enter to exit...")
         sys.exit(1)
 
 
+def error_color():
+    print Fore.LIGHTRED_EX
+
+
+def success_color():
+    print Fore.LIGHTGREEN_EX
+
+
+def reset_colors():
+    print Style.RESET_ALL
+
+
 def print_logo():
-    print "  _____          _ _  ____                      "
-    print " |_   _| __ ___ | | |/ ___| __ _ _ __ ___   ___ "
-    print "   | || '__/ _ \| | | |  _ / _` | '_ ` _ \ / _ \\"
-    print "   | || | | (_) | | | |_| | (_| | | | | | |  __/"
-    print "   |_||_|  \___/|_|_|\____|\__,_|_| |_| |_|\___|"
-    print "   _   _           _       _                    "
-    print "  | | | |_ __   __| | __ _| |_ ___ _ __         "
-    print "  | | | | '_ \ / _` |/ _` | __/ _ \ '__|        "
-    print "  | |_| | |_) | (_| | (_| | ||  __/ |           "
-    print "   \___/| .__/ \__,_|\__,_|\__\___|_|           "
-    print "        |_|                                     "
-    print "                                                "
-    print "                              by LizardWizard   "
+    print "\n"
+    print "\t  _____          _ _  ____                      "
+    print "\t |_   _| __ ___ | | |/ ___| __ _ _ __ ___   ___ "
+    print "\t   | || '__/ _ \| | | |  _ / _` | '_ ` _ \ / _ \\"
+    print "\t   | || | | (_) | | | |_| | (_| | | | | | |  __/"
+    print "\t   |_||_|  \___/|_|_|\____|\__,_|_| |_| |_|\___|"
+    print "\t   _   _           _       _                    "
+    print "\t  | | | |_ __   __| | __ _| |_ ___ _ __         "
+    print "\t  | | | | '_ \ / _` |/ _` | __/ _ \ '__|        "
+    print "\t  | |_| | |_) | (_| | (_| | ||  __/ |           "
+    print "\t   \___/| .__/ \__,_|\__,_|\__\___|_|           "
+    print "\t        |_|                                     "
+    print "\t                                                "
+    print "\t                              by LizardWizard   "
     print "\n\n"
 
 
@@ -309,17 +337,15 @@ def main_menu_handler(installed_patch_version):
             os.system("cls")
             print_logo()
             if installed_patch_version is None:  # Patch installation
-                try:
-                    archive_path = download_file(PATCH_URL)
-                    archive_deflated_path = extract_zip(archive_path)
-                    backup_zip(MODULES_PATH, NATIVE_PATH)
-                    install_patch(NATIVE_PATH, archive_deflated_path + r"\TG-NeoGK\Native")
-                    create_version_file(NATIVE_PATH, version_to_int(LATEST_VERSION))
-                    clean_up([archive_deflated_path, archive_path])
-                except Exception as e:
-                    print e
-                    sys.exit(1)
+                archive_path = download_file(PATCH_URL)
+                archive_deflated_path = extract_zip(archive_path)
+                backup_zip(MODULES_PATH, NATIVE_PATH)
+                install_patch(NATIVE_PATH, archive_deflated_path + r"\TG-NeoGK\Native")
+                create_version_file(NATIVE_PATH, version_to_int(LATEST_VERSION))
+                clean_up([archive_deflated_path, archive_path])
+                success_color()
                 print "\n  TrollPatch installed successfully. Version: %s" % check_installed_version(NATIVE_PATH)
+                reset_colors()
                 raw_input("\n  Press Enter to return...")
                 os.system('cls')
                 print_logo()
@@ -333,7 +359,9 @@ def main_menu_handler(installed_patch_version):
                 install_patch(NATIVE_PATH, archive_deflated_path + r"\TG-NeoGK\Native")
                 create_version_file(NATIVE_PATH, version_to_int(LATEST_VERSION))
                 clean_up([archive_deflated_path, archive_path])
+                success_color()
                 print "\n  TrollPatch updated successfully. Version: %s" % check_installed_version(NATIVE_PATH)
+                reset_colors()
                 raw_input("\n  Press Enter to return...")
                 os.system('cls')
                 print_logo()
@@ -379,7 +407,9 @@ def addons_menu_handler():
             banners_unzip = extract_zip(banners_zip)
             install_addon(TEXTURES_PATH, banners_unzip + r'\Textures')
             clean_up([banners_zip, banners_unzip])
+            success_color()
             print "\n  TrollGame Banner Pack installed successfully."
+            reset_colors()
             raw_input("\n  Press Enter to return...")
             os.system('cls')
             print_logo()
@@ -393,7 +423,9 @@ def addons_menu_handler():
             coughs_unzip = extract_zip(coughs_zip)
             install_addon(SOUNDS_PATH, coughs_unzip + r'\Sounds')
             clean_up([coughs_zip, coughs_unzip])
+            success_color()
             print "\n  Coughs addon installed successfully."
+            reset_colors()
             raw_input("\n  Press Enter to return...")
             os.system('cls')
             print_logo()
@@ -407,7 +439,9 @@ def addons_menu_handler():
             monty_unzip = extract_zip(monty_zip)
             install_addon(SOUNDS_PATH, monty_unzip + r'\Sounds')
             clean_up([monty_zip, monty_unzip])
+            success_color()
             print "\n  Monty Python Theme addon installed successfully."
+            reset_colors()
             raw_input("\n  Press Enter to return...")
             os.system('cls')
             print_logo()
@@ -421,7 +455,9 @@ def addons_menu_handler():
             ni_unzip = extract_zip(ni_zip)
             install_addon(SOUNDS_PATH, ni_unzip + r'\Sounds')
             clean_up([ni_zip, ni_unzip])
+            success_color()
             print "\n  Ni! addon installed successfully."
+            reset_colors()
             raw_input("\n  Press Enter to return...")
             os.system('cls')
             print_logo()
@@ -459,13 +495,18 @@ NATIVE_PATH = MODULES_PATH + r"\Native"
 SOUNDS_PATH = NATIVE_PATH + r"\Sounds"
 TEXTURES_PATH = NATIVE_PATH + r"\Textures"
 
+init()  # init colorama for colored console text
+os.system("title TrollGame Updater v1.1.1")
+
 # Warband installation not found
 if WARBAND_PATH is None:
     print "  Warband not found."
     raw_input("\n  Press Enter to exit...")
     sys.exit(1)
 
+print_logo()
 print "\n  Connecting to server..."
+
 LATEST_VERSION = check_latest_version(VERSION_URL)
 os.system('cls')
 print_logo()
