@@ -2,11 +2,20 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [1.2.1] - 2018-03-20
+## Added
+- Addon versioning
+- Support for limited edition addons (banner packs for events and such)
+- Version coloring for easier understanding of what needs to be updated
+## Changed
+- Underlying structure of the updater to make it more flexible
+
+
 ### [1.1.1] - 2018-02-27
 ## Added
 - Console window title TrollGame Updater version
 - Colored console text
-- Fixed some display misplacements
+- Fixed some display misplacement
 ## Changed
 - Adjusted logo position
 
@@ -17,7 +26,7 @@ All notable changes to this project will be documented in this file.
 - Minor stability improvement
 ## Changed
 - Backup archive name format now includes time stamp
-- Reverted to py2exe packer due to antivirus false positives when packing with pyinstaller
+- Reverted to py2exe packer due to anti-virus false positives when packing with pyinstaller
 
 ### [1.0.2] - 2018-02-12
 ## Added

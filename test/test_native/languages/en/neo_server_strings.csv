@@ -1,0 +1,73 @@
+﻿#--------------------------------------------
+###server_messages
+
+#important: case of server only, to active.
+#and client should be comment out by "#".
+#empty comment is passed through.
+#Useless messages should be to empty.
+#you can make total 20 messages.
+
+#str_mod_server_message1|your server message1
+#str_mod_server_message2|your server message2
+#str_mod_server_message3|your server message3
+#str_mod_server_message4|your server message4
+#str_mod_server_message5|your server message5
+#str_mod_server_message6|your server message6
+#str_mod_server_message7|your server message7
+#str_mod_server_message8|your server message8
+#str_mod_server_message9|your server message9
+#str_mod_server_message10|your server message10
+
+#str_mod_server_message11|your server message11
+#str_mod_server_message12|your server message12
+#str_mod_server_message13|your server message13
+#str_mod_server_message14|your server message14
+#str_mod_server_message15|your server message15
+#str_mod_server_message16|your server message16
+#str_mod_server_message17|your server message17
+#str_mod_server_message18|your server message18
+#str_mod_server_message19|your server message19
+#str_mod_server_message20|your server message20
+
+#--------------------------------------------
+###custom_maps
+#you can name to 30 custom maps.
+#"scn_multi_neo_custom_1-30"
+str_multi_neo_custom_1|New Ruins by DWARF
+str_multi_neo_custom_2|New River side by DWARF
+str_multi_neo_custom_3|New Hails by DWARF
+str_multi_neo_custom_4|Boundary Barrier by DWARF
+str_multi_neo_custom_5|Coast Castle by DWARF
+str_multi_neo_custom_6|Midnight Town by Yusaku
+str_multi_neo_custom_7|Sea Fort by DWARF
+str_multi_neo_custom_8|Pirates Reef by DWARF
+str_multi_neo_custom_9|Extended Hails by Aeneu
+str_multi_neo_custom_10|New Mardaah by DWARF
+str_multi_neo_custom_11|Praven City by Yusaku
+str_multi_neo_custom_12|Island Arena by DWARF
+str_multi_neo_custom_13|Sykarnom by Aeneu
+str_multi_neo_custom_14|Island Trip by Aeneu
+#str_multi_neo_custom_15|
+#str_multi_neo_custom_16|
+#str_multi_neo_custom_17|
+#str_multi_neo_custom_18|
+#str_multi_neo_custom_19|
+#str_multi_neo_custom_20|
+#str_multi_neo_custom_21|
+#str_multi_neo_custom_22|
+#str_multi_neo_custom_23|
+#str_multi_neo_custom_24|
+#str_multi_neo_custom_25|
+#str_multi_neo_custom_26|
+#str_multi_neo_custom_27|
+#str_multi_neo_custom_28|
+#str_multi_neo_custom_29|
+#str_multi_neo_custom_30|
+#str_mod_multi_scene_custom|custom map
+
+#--------------------------------------------
+###display_download_url
+#If you change the displayed url, write here.
+
+#str_mod_download_url|http://www.yourwanturl
+#--------------------------------------------
