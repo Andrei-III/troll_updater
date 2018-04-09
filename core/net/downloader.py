@@ -1,7 +1,7 @@
 import os
 import urllib2
 
-from ui.ui_constants import *
+from ui.ui_constants import INDENTATION
 from ui.ui_utils import print_indented
 
 
@@ -48,7 +48,7 @@ def get_json(url):
     Downloads a json from the given URL.
 
     :param url: The URL source of the json.
-    :return:Returns the downloaded json or None
+    :return: Returns the downloaded json or None
     if URL is malformed, the server is unreachable
     or the server fails to fulfill the request.
     """

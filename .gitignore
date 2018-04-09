@@ -1,0 +1,10 @@
+build_pyinstaller.bat
+todo.txt
+troll_updater.exe
+sample.json
+.git
+.idea
+build
+dist
+.vscode
+venv
