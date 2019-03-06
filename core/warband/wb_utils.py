@@ -1,8 +1,9 @@
-from _winreg import *
+from _winreg import OpenKey, CloseKey, QueryValueEx, HKEY_LOCAL_MACHINE
 
 from core.os_utils import find_first_file
 from core.patch import TrollPatch
 from core.version import VERSION_FILE_EXT
+import sys
 
 
 def get_warband_path():
@@ -18,8 +19,15 @@ def get_warband_path():
         install_path = QueryValueEx(a_key, "install_path")
         CloseKey(a_key)
         return install_path[0]
-    except WindowsError:
-        return None
+    except WindowsError as e:
+        try:
+            a_key = OpenKey(HKEY_LOCAL_MACHINE, r"SOFTWARE\WOW6432Node\mount&blade warband")
+            install_path = QueryValueEx(a_key, "install_path")
+            CloseKey(a_key)
+            return install_path[0]
+        except WindowsError as e:
+            print("Error getting warband path: " + str(e))
+            sys.exit(1)
 
 
 def is_addon_installed(addon_name, native_path):
