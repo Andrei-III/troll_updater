@@ -2,7 +2,7 @@
 TrollPatch v1.2.1
 
 # Simple patching & updating utility for Mount & Blade Warband NeoGK mod with TrollGame flavour.
-# Written in Python 2.7 and compiled to executable with py2exe 0.6.9
+# Written in Python 2.7 32bit and compiled to executable with py2exe 0.6.9 (python -m ensurepip | pip install py2exe_py2)
 
 Instructions:
 
