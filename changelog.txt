@@ -2,6 +2,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [1.2.1] - 2019-03-06
+## Fixed
+- Bug that would crash the script on x64 machines
+
 ### [1.2.1] - 2018-03-20
 ## Added
 - Addon versioning
